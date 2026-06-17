@@ -20,8 +20,8 @@ COPY . .
 # Run composer to install your Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Clear configuration cache to force load the published cors.php settings
+# Clear configuration cache
 RUN php artisan config:clear
 
-# Run via PHP's production router to ensure /api routes forward safely
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "public"]
+# Use Laravel's built-in server.php router so /api routes work correctly
+CMD ["php", "-S", "0.0.0.0:10000", "server.php"]
