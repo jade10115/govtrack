@@ -24,4 +24,5 @@ RUN composer install --optimize-autoloader --no-dev
 RUN php artisan config:clear
 
 # Start the Laravel production server cleanly
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+# Start the Laravel server pointing directly to the public router file
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000", "--router=server.php"]
