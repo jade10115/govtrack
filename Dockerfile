@@ -1,5 +1,5 @@
-# Use the official PHP 8.2 image with a full Apache Production Server
-FROM php:8.2-apache
+# Use the official PHP 8.2 image
+FROM php:8.2-cli
 
 # Install system dependencies and PHP extensions required by Laravel
 RUN apt-get update && apt-get install -y \
@@ -8,26 +8,11 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install pdo pdo_mysql zip
 
-# Enable Apache mod_rewrite (The magic that makes Laravel routing work)
-RUN a2enmod rewrite
-
-# Change Apache's default root to Laravel's public folder
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# CRITICAL FIX: Tell Apache to read Laravel's .htaccess file!
-RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
-
-# Configure Apache to listen on Render's required port (10000)
-RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf
-RUN sed -i 's/:80/:10000/g' /etc/apache2/sites-available/000-default.conf
-
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set the working directory
-WORKDIR /var/www/html
+# Set the working directory inside the server
+WORKDIR /app
 
 # Copy all your Laravel files into the server
 COPY . .
@@ -35,5 +20,11 @@ COPY . .
 # Run composer to install your Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Give Apache full permission to write to Laravel's cache and storage
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Clear configuration cache
+RUN php artisan config:clear
+
+# Serve the app with public/ as the document root so requests boot Laravel
+# (public/index.php) directly. This avoids depending on a separate
+# server.php router file, which was missing and caused requests to bypass
+# Laravel's middleware stack entirely (breaking CORS, auth, everything).
+CMD ["php", "-S", "0.0.0.0:10000", "-t", "public"]
