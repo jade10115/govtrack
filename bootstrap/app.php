@@ -12,11 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Fix CORS right here for Laravel 11
-        $middleware->statefulApi();
-        
+        // No statefulApi() here — we're using Sanctum Bearer tokens,
+        // not cookie-based SPA auth. Mixing the two is what broke CORS.
+
         $middleware->validateCsrfTokens(except: [
-            'api/*', // Bypasses CSRF tokens for all API routes since we use Bearer Tokens
+            'api/*', // Bearer tokens don't need CSRF protection
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
