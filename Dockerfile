@@ -20,5 +20,8 @@ COPY . .
 # Run composer to install your Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Clear the configuration cache and start the Laravel production server
-CMD php artisan config:clear && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Clear the configuration cache right before starting the server
+RUN php artisan config:clear
+
+# Start the Laravel production server cleanly
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
