@@ -11,24 +11,6 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite and mod_headers
 RUN a2enmod rewrite headers
 
-# Change Apache's default root to Laravel's public folder
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# THE ULTIMATE ROUTING FIX: Force Apache to send ALL missing routes to index.php
-RUN echo "<Directory /var/www/html/public>\n    AllowOverride All\n    FallbackResource /index.php\n</Directory>" >> /etc/apache2/apache2.conf
-
-# GOD-MODE CORS: Force Apache to attach headers to EVERYTHING
-RUN echo "Header always set Access-Control-Allow-Origin \"https://govtrack-frontend.vercel.app\"" >> /etc/apache2/apache2.conf
-RUN echo "Header always set Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\"" >> /etc/apache2/apache2.conf
-RUN echo "Header always set Access-Control-Allow-Headers \"Origin, Content-Type, Accept, Authorization, X-Requested-With, X-CSRF-TOKEN\"" >> /etc/apache2/apache2.conf
-RUN echo "Header always set Access-Control-Allow-Credentials \"true\"" >> /etc/apache2/apache2.conf
-
-# Configure Apache to listen on Render's required port (10000)
-RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf
-RUN sed -i 's/:80/:10000/g' /etc/apache2/sites-available/000-default.conf
-
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -43,3 +25,26 @@ RUN composer install --optimize-autoloader --no-dev
 
 # Give Apache full permission to write to Laravel's cache and storage
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# THE BULLETPROOF ROUTING FIX: Hardcode Laravel's routing rules directly into Apache
+RUN echo '<VirtualHost *:10000>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+        RewriteEngine On\n\
+        RewriteCond %{REQUEST_FILENAME} !-d\n\
+        RewriteCond %{REQUEST_FILENAME} !-f\n\
+        RewriteRule ^ index.php [L]\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+# Configure Apache to listen on Render's required port (10000)
+RUN echo "Listen 10000" > /etc/apache2/ports.conf
+
+# GOD-MODE CORS: Force Apache to attach headers to EVERYTHING
+RUN echo "Header always set Access-Control-Allow-Origin \"https://govtrack-frontend.vercel.app\"" >> /etc/apache2/apache2.conf
+RUN echo "Header always set Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\"" >> /etc/apache2/apache2.conf
+RUN echo "Header always set Access-Control-Allow-Headers \"Origin, Content-Type, Accept, Authorization, X-Requested-With, X-CSRF-TOKEN\"" >> /etc/apache2/apache2.conf
+RUN echo "Header always set Access-Control-Allow-Credentials \"true\"" >> /etc/apache2/apache2.conf
