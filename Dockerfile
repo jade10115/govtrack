@@ -8,13 +8,16 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install pdo pdo_mysql zip
 
-# Enable Apache mod_rewrite (This is the magic that makes Laravel routing and CORS work)
+# Enable Apache mod_rewrite (The magic that makes Laravel routing work)
 RUN a2enmod rewrite
 
 # Change Apache's default root to Laravel's public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# CRITICAL FIX: Tell Apache to read Laravel's .htaccess file!
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 # Configure Apache to listen on Render's required port (10000)
 RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf
