@@ -10,8 +10,9 @@ Route::get('/', function () {
 // The Secret Database Builder Route
 Route::get('/setup-database', function () {
     try {
-        Artisan::call('migrate', ['--force' => true]);
-        return 'SUCCESS: Database tables created perfectly!';
+        // We changed this to db:seed to create your admin account!
+        Artisan::call('db:seed', ['--force' => true]);
+        return 'SUCCESS: Database seeded perfectly! Admin account created.';
     } catch (\Exception $e) {
         return 'ERROR: ' . $e->getMessage();
     }
