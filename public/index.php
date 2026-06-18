@@ -1,19 +1,5 @@
 <?php
 
-// 1. FORCED CORS HEADERS (The Sledgehammer)
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-    header("Access-Control-Allow-Credentials: true");
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Requested-With, X-CSRF-TOKEN");
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    header("HTTP/1.1 200 OK");
-    exit(0);
-}
-
-// 2. STANDARD LARAVEL BOOTSTRAP
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
