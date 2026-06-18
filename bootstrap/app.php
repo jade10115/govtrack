@@ -11,14 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        // No statefulApi() here — we're using Sanctum Bearer tokens,
-        // not cookie-based SPA auth. Mixing the two is what broke CORS.
 
-        $middleware->validateCsrfTokens(except: [
-            'api/*', // Bearer tokens don't need CSRF protection
-        ]);
+    ->withMiddleware(function (Middleware $middleware) {
+
+    
+
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+
+    ->create();

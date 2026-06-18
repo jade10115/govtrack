@@ -10,7 +10,12 @@ use App\Http\Controllers\Api\ClientRequestController;
 use App\Http\Controllers\Api\AssignedRequestController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserLevelController;
-
+    Route::get('/cors-test', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'CORS working'
+    ]);
+});
 Route::post('/login', [AuthController::class,'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -50,4 +55,6 @@ Route::middleware('auth:sanctum')->group(function () {
         '/dashboard',
         [DashboardController::class,'index']
     );
+
+
 });
