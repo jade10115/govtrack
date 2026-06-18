@@ -49,4 +49,6 @@ RUN echo "<IfModule mod_rewrite.c>\n\
 </IfModule>" > /var/www/html/public/.htaccess
 
 # 2. THE CACHE FIX: Force Laravel to wipe its memory and read your updated config/cors.php
+# 2. THE CACHE FIX: Create a dummy SQLite file so Laravel doesn't panic during the build, then clear the cache
+RUN touch /var/www/html/database/database.sqlite
 RUN php artisan optimize:clear
