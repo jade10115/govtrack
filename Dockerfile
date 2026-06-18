@@ -50,5 +50,5 @@ RUN echo "<IfModule mod_rewrite.c>\n\
 
 # 2. THE CACHE FIX: Force Laravel to wipe its memory and read your updated config/cors.php
 # 2. THE CACHE FIX: Create a dummy SQLite file so Laravel doesn't panic during the build, then clear the cache
-RUN touch /var/www/html/database/database.sqlite
-RUN php artisan optimize:clear
+# 2. THE CACHE FIX: Physically delete the cached files directly so Laravel doesn't try to connect to a database during the build
+RUN rm -f bootstrap/cache/*.php
