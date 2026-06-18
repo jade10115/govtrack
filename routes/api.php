@@ -15,6 +15,15 @@ use App\Http\Controllers\Api\UserLevelController;
         'success' => true,
         'message' => 'CORS working'
     ]);
+    Route::get('/env-test', function () {
+    return response()->json([
+        'host' => env('DB_HOST'),
+        'database' => env('DB_DATABASE'),
+        'port' => env('DB_PORT'),
+        'user' => env('DB_USERNAME'),
+        'session_driver' => env('SESSION_DRIVER'),
+    ]);
+});
 });
 Route::post('/login', [AuthController::class,'login']);
 

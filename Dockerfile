@@ -34,7 +34,7 @@ COPY . .
 
 # Run composer to install your Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
-
+RUN php artisan optimize:clear || true
 # Give Apache full permission to write to Laravel's cache and storage
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
