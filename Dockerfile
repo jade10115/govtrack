@@ -37,3 +37,16 @@ RUN composer install --optimize-autoloader --no-dev
 
 # Give Apache full permission to write to Laravel's cache and storage
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# 1. THE ROUTING FIX: Manually generate the exact Laravel .htaccess file to guarantee it exists
+RUN echo "<IfModule mod_rewrite.c>\n\
+    RewriteEngine On\n\
+    RewriteCond %{HTTP:Authorization} .\n\
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]\n\
+    RewriteCond %{REQUEST_FILENAME} !-d\n\
+    RewriteCond %{REQUEST_FILENAME} !-f\n\
+    RewriteRule ^ index.php [L]\n\
+</IfModule>" > /var/www/html/public/.htaccess
+
+# 2. THE CACHE FIX: Force Laravel to wipe its memory and read your updated config/cors.php
+RUN php artisan optimize:clear
